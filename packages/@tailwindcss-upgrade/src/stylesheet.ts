@@ -7,6 +7,13 @@ export type StylesheetId = string
 
 export class Stylesheet {
   /**
+   * A unique identifier for this stylesheet
+   *
+   * Used to track the stylesheet in PostCSS nodes.
+   */
+  id: StylesheetId
+
+  /**
    * The PostCSS AST that represents this stylesheet.
    */
   root: postcss.Root
@@ -17,6 +24,16 @@ export class Stylesheet {
    * If this stylesheet was not loaded from a file this will be `null`.
    */
   file: string | null = null
+
+  /**
+   * Stylesheets that import this stylesheet.
+   */
+  parents = new Set<Stylesheet>()
+
+  /**
+   * Stylesheets that are imported by stylesheet.
+   */
+  children = new Set<Stylesheet>()
 
   static async load(filepath: string) {
     filepath = path.resolve(process.cwd(), filepath)
@@ -38,14 +55,39 @@ export class Stylesheet {
   }
 
   constructor(root: postcss.Root, file?: string) {
+    this.id = Math.random().toString(36).slice(2)
     this.root = root
     this.file = file ?? null
+  }
+
+  get ancestors() {
+    return walkDepth<Stylesheet>(this, (sheet) => sheet.parents ?? [])
+  }
+
+  get descendants() {
+    return walkDepth<Stylesheet>(this, (sheet) => sheet.children ?? [])
   }
 
   [util.inspect.custom]() {
     return {
       ...this,
       root: this.root.toString(),
+      parents: Array.from(this.parents, (s) => s.id),
+      children: Array.from(this.children, (s) => s.id),
     }
+  }
+}
+
+function* walkDepth<T>(
+  value: T,
+  getList: (value: T) => Iterable<T>,
+  seen = new Set<T>(),
+): Iterable<T> {
+  for (let item of getList(value)) {
+    if (seen.has(item)) continue
+    seen.add(item)
+
+    yield* walkDepth(item, getList, seen)
+    yield item
   }
 }
