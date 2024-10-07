@@ -2,6 +2,7 @@ import path from 'node:path'
 import postcss from 'postcss'
 import type { Config } from 'tailwindcss'
 import type { DesignSystem } from '../../tailwindcss/src/design-system'
+import { segment } from '../../tailwindcss/src/utils/segment'
 import { migrateAtApply } from './codemods/migrate-at-apply'
 import { migrateAtLayerUtilities } from './codemods/migrate-at-layer-utilities'
 import { migrateMissingLayers } from './codemods/migrate-missing-layers'
@@ -27,7 +28,7 @@ export async function migrateContents(
 
   return postcss()
     .use(migrateAtApply(options))
-    .use(migrateAtLayerUtilities())
+    .use(migrateAtLayerUtilities(stylesheet))
     .use(migrateMissingLayers())
     .use(migrateTailwindDirectives(options))
     .process(stylesheet.root, { from: stylesheet.file ?? undefined })
@@ -94,6 +95,13 @@ export async function analyze(stylesheets: Stylesheet[]) {
             stylesheet.parents.add(parent)
             parent.children.add(stylesheet)
           }
+
+          for (let part of segment(node.params, ' ')) {
+            if (!part.startsWith('layer(')) continue
+            if (!part.endsWith(')')) continue
+
+            stylesheet.layers.add(part.slice(6, -1).trim())
+          }
         },
       },
     },
@@ -103,5 +111,14 @@ export async function analyze(stylesheets: Stylesheet[]) {
     if (!sheet.file) continue
 
     await processor.process(sheet.root, { from: sheet.file })
+  }
+
+  // Step 2: Analyze the AST so each stylesheet can know what layers it is inside
+  for (let sheet of stylesheets) {
+    for (let ancestor of sheet.ancestors) {
+      for (let layer of ancestor.layers) {
+        sheet.layers.add(layer)
+      }
+    }
   }
 }

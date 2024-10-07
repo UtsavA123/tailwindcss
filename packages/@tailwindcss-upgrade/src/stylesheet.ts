@@ -35,6 +35,11 @@ export class Stylesheet {
    */
   children = new Set<Stylesheet>()
 
+  /**
+   * The layers this stylesheet is in, even transitive layers from parents.
+   */
+  layers = new Set<string>()
+
   static async load(filepath: string) {
     filepath = path.resolve(process.cwd(), filepath)
 
@@ -72,6 +77,7 @@ export class Stylesheet {
     return {
       ...this,
       root: this.root.toString(),
+      layers: Array.from(this.layers),
       parents: Array.from(this.parents, (s) => s.id),
       children: Array.from(this.children, (s) => s.id),
     }
