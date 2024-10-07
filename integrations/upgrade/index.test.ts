@@ -1,3 +1,4 @@
+import { expect } from 'vitest'
 import { css, html, js, json, test } from '../utils'
 
 test(
@@ -31,15 +32,15 @@ test(
   async ({ exec, fs }) => {
     await exec('npx @tailwindcss/upgrade')
 
-    await fs.expectFileToContain(
-      'src/index.html',
-      html`
-        <h1>🤠👋</h1>
-        <div class="flex! sm:block! bg-linear-to-t bg-[var(--my-red)]"></div>
-      `,
-    )
+    expect(await fs.dumpFiles('./src/**/*.{css,html}')).toMatchInlineSnapshot(`
+      "
+      --- ./src/index.html ---
+      <h1>🤠👋</h1>
+      <div class="flex! sm:block! bg-linear-to-t bg-[var(--my-red)]"></div>
 
-    await fs.expectFileToContain('src/input.css', css`@import 'tailwindcss';`)
+      --- ./src/input.css ---
+      @import 'tailwindcss';"
+    `)
   },
 )
 
@@ -79,23 +80,19 @@ test(
   async ({ exec, fs }) => {
     await exec('npx @tailwindcss/upgrade')
 
-    await fs.expectFileToContain(
-      'src/index.html',
-      html`
-        <h1>🤠👋</h1>
-        <div class="tw:flex! tw:sm:block! tw:bg-linear-to-t flex tw:[color:red]"></div>
-      `,
-    )
+    expect(await fs.dumpFiles('./src/**/*.{css,html}')).toMatchInlineSnapshot(`
+      "
+      --- ./src/index.html ---
+      <h1>🤠👋</h1>
+      <div class="tw:flex! tw:sm:block! tw:bg-linear-to-t flex tw:[color:red]"></div>
 
-    await fs.expectFileToContain('src/input.css', css` @import 'tailwindcss' prefix(tw); `)
-    await fs.expectFileToContain(
-      'src/input.css',
-      css`
-        .btn {
-          @apply tw:rounded-md! tw:px-2 tw:py-1 tw:bg-blue-500 tw:text-white;
-        }
-      `,
-    )
+      --- ./src/input.css ---
+      @import 'tailwindcss' prefix(tw);
+
+      .btn {
+        @apply tw:rounded-md! tw:px-2 tw:py-1 tw:bg-blue-500 tw:text-white;
+      }"
+    `)
   },
 )
 
@@ -132,22 +129,23 @@ test(
   async ({ fs, exec }) => {
     await exec('npx @tailwindcss/upgrade')
 
-    await fs.expectFileToContain(
-      'src/index.css',
-      css`
-        .a {
-          @apply flex;
-        }
+    expect(await fs.dumpFiles('./src/**/*.css')).toMatchInlineSnapshot(`
+      "
+      --- ./src/index.css ---
+      @import 'tailwindcss';
 
-        .b {
-          @apply flex!;
-        }
+      .a {
+        @apply flex;
+      }
 
-        .c {
-          @apply flex! flex-col! items-center!;
-        }
-      `,
-    )
+      .b {
+        @apply flex!;
+      }
+
+      .c {
+        @apply flex! flex-col! items-center!;
+      }"
+    `)
   },
 )
 
@@ -184,27 +182,23 @@ test(
   async ({ fs, exec }) => {
     await exec('npx @tailwindcss/upgrade')
 
-    await fs.expectFileToContain('src/index.css', css`@import 'tailwindcss';`)
-    await fs.expectFileToContain(
-      'src/index.css',
-      css`
-        @layer base {
-          html {
-            color: #333;
-          }
+    expect(await fs.dumpFiles('./src/**/*.css')).toMatchInlineSnapshot(`
+      "
+      --- ./src/index.css ---
+      @import 'tailwindcss';
+
+      @layer base {
+        html {
+          color: #333;
         }
-      `,
-    )
-    await fs.expectFileToContain(
-      'src/index.css',
-      css`
-        @layer components {
-          .btn {
-            color: red;
-          }
+      }
+
+      @layer components {
+        .btn {
+          color: red;
         }
-      `,
-    )
+      }"
+    `)
   },
 )
 
@@ -246,21 +240,22 @@ test(
   async ({ fs, exec }) => {
     await exec('npx @tailwindcss/upgrade')
 
-    await fs.expectFileToContain(
-      'src/index.css',
-      css`
-        @utility btn {
-          @apply rounded-md px-2 py-1 bg-blue-500 text-white;
-        }
+    expect(await fs.dumpFiles('./src/**/*.css')).toMatchInlineSnapshot(`
+      "
+      --- ./src/index.css ---
+      @import 'tailwindcss';
 
-        @utility no-scrollbar {
-          &::-webkit-scrollbar {
-            display: none;
-          }
-          -ms-overflow-style: none;
-          scrollbar-width: none;
+      @utility btn {
+        @apply rounded-md px-2 py-1 bg-blue-500 text-white;
+      }
+
+      @utility no-scrollbar {
+        &::-webkit-scrollbar {
+          display: none;
         }
-      `,
-    )
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }"
+    `)
   },
 )
