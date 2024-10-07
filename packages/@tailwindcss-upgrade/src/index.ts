@@ -6,7 +6,11 @@ import path from 'node:path'
 import postcss from 'postcss'
 import { formatNodes } from './codemods/format-nodes'
 import { help } from './commands/help'
-import { analyze as analyzeStylesheets, migrate as migrateStylesheet } from './migrate'
+import {
+  analyze as analyzeStylesheets,
+  migrate as migrateStylesheet,
+  split as splitStylesheets,
+} from './migrate'
 import { Stylesheet } from './stylesheet'
 import { migrate as migrateTemplate } from './template/migrate'
 import { prepareConfig } from './template/prepare-config'
@@ -126,6 +130,13 @@ async function run() {
       if (result.status === 'rejected') {
         error(`${result.reason}`)
       }
+    }
+
+    // Split up stylesheets (as needed)
+    try {
+      await splitStylesheets(stylesheets)
+    } catch (e: unknown) {
+      error(`${e}`)
     }
 
     // Format nodes

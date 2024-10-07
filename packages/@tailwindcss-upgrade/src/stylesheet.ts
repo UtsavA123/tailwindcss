@@ -65,6 +65,20 @@ export class Stylesheet {
     this.file = file ?? null
   }
 
+  get importRules() {
+    let imports = new Set<postcss.AtRule>()
+
+    this.root.walkAtRules('import', (rule) => {
+      imports.add(rule)
+    })
+
+    return imports
+  }
+
+  get isEmpty() {
+    return this.root.toString().trim() === ''
+  }
+
   get ancestors() {
     return walkDepth<Stylesheet>(this, (sheet) => sheet.parents ?? [])
   }
