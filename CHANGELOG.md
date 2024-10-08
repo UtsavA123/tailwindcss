@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Don’t crash when scanning a candidate equal to the configured prefix ([#14588](https://github.com/tailwindlabs/tailwindcss/pull/14588))
 - Ensure there's always a space before `!important` when stringifying CSS ([#14611](https://github.com/tailwindlabs/tailwindcss/pull/14611))
+- Ensure the CSS `theme()` function resolves to the right value in some compatibility situations ([#14614](https://github.com/tailwindlabs/tailwindcss/pull/14614))
 - _Experimental_: Ensure CSS before a layer stays unlayered when running codemods ([#14596](https://github.com/tailwindlabs/tailwindcss/pull/14596))
 
 ## [4.0.0-alpha.26] - 2024-10-03
