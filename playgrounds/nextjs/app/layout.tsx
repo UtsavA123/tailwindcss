@@ -13,6 +13,9 @@ export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
+  watch: Reach.ReachNode
+  
+  
 }>) {
   return (
     <html lang="en" className="[&_h1]:font-thin">
